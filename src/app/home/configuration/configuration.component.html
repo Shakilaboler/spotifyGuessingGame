@@ -1,0 +1,62 @@
+<div class="background-container">
+  <div class="config-container">
+    <h2>Game Configuration</h2>
+    <form (ngSubmit)="submitConfig()">
+      <div class="form-group">
+        <label>Gameplay Mode:</label>
+        <div>
+          <input
+            type="radio"
+            id="infiniteMode"
+            name="gameplayMode"
+            [(ngModel)]="gameplayMode"
+            value="infinite"
+            checked
+          />
+          <label
+            for="infiniteMode"
+            title="Infinite Mode: Keep guessing correctly as long as you can!"
+            >Infinite Mode</label
+          >
+        </div>
+        <div>
+          <input
+            type="radio"
+            id="quizMode"
+            name="gameplayMode"
+            [(ngModel)]="gameplayMode"
+            value="quiz"
+          />
+          <label for="quizMode" title="Quiz Mode: A set of 10 songs to guess!"
+            >Quiz Mode</label
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="difficulty">Difficulty:</label>
+        <select
+          id="difficulty"
+          [(ngModel)]="selectedDifficulty"
+          name="difficulty"
+        >
+          <option value="easy">Easy - 30 seconds of playback</option>
+          <option value="medium">Medium - 20 seconds of playback</option>
+          <option value="hard">Hard - 10 seconds of playback</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="artist">Select Artist:</label>
+        <select id="artist" [(ngModel)]="selectedArtistId" name="artist">
+          <option *ngFor="let artist of artists" [value]="artist.id">
+            {{ artist.name }}
+          </option>
+        </select>
+      </div>
+
+      <button type="button" (click)="navigateToHome()">Home</button>
+      <button type="submit">Start Game</button>
+    </form>
+  </div>
+</div>

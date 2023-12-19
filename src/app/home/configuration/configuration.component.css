@@ -1,0 +1,95 @@
+.background-container {
+  background-image: url("src/assets/81GzlHrvBDL._AC_UF894,1000_QL80_.jpg");
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.background-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 0;
+}
+
+.background-container * {
+  position: relative;
+  z-index: 1;
+}
+
+.config-container {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 1);
+  max-width: 600px;
+  width: 100%;
+  color: #333;
+  margin: auto;
+}
+
+.config-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.form-group input[type="text"],
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.form-group input[type="radio"] {
+  margin-right: 5px;
+}
+
+.form-group label[for="infiniteMode"],
+.form-group label[for="quizMode"] {
+  display: inline;
+}
+
+button {
+  background-color: #059831;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #033611;
+}
+
+button[type="submit"] {
+  margin-left: 5px;
+}
+
+button:first-of-type {
+  margin-right: 5px;
+}

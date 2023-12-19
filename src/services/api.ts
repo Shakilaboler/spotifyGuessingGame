@@ -2,6 +2,9 @@ import { toPairs } from "lodash";
 import "whatwg-fetch";
 
 const SPOTIFY_ROOT = "https://api.spotify.com/v1";
+const AUTH_ENDPOINT =
+  "https://nuod0t2zoe.execute-api.us-east-2.amazonaws.com/FT-Classroom/spotify-auth-token";
+const TOKEN_KEY = "whos-who-access-token";
 
 /**
  * Parses the JSON returned by a network request
@@ -59,4 +62,41 @@ const fetchFromSpotify = ({ token, endpoint, params }: any) => {
   return request(url, options);
 };
 
-export default fetchFromSpotify;
+const authenticateWithSpotify = async () => {
+  try {
+    const response = await fetch(AUTH_ENDPOINT);
+    const data = await response.json();
+    const accessToken = data.access_token;
+    if (accessToken) {
+      localStorage.setItem(TOKEN_KEY, accessToken);
+      return accessToken;
+    } else {
+      throw new Error("Failed to retrieve access token");
+    }
+  } catch (error) {
+    console.error("Error during Spotify authentication:", error);
+    return null;
+  }
+};
+
+const fetchTopTracksOfArtist = async (artistId: string) => {
+  let token = localStorage.getItem(TOKEN_KEY);
+  if (!token) {
+    token = await authenticateWithSpotify();
+  }
+  if (token) {
+    const endpoint = `artists/${artistId}/top-tracks`;
+    const params = { market: "US" };
+    return fetchFromSpotify({ token, endpoint, params });
+  }
+};
+
+const getSpotifyToken = async (): Promise<string | null> => {
+  let token = localStorage.getItem(TOKEN_KEY);
+  if (!token) {
+    token = await authenticateWithSpotify();
+  }
+  return token;
+};
+
+export { fetchFromSpotify, fetchTopTracksOfArtist, getSpotifyToken };
