@@ -4,8 +4,10 @@ import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import {
   fetchFromSpotify,
-  getWrongAnswers,
   getSpotifyToken,
+  getRandomTrack,
+  getWrongAnswers,
+  Track,
 } from "../../../services/api";
 
 async function getAdditionalWrongAnswer(

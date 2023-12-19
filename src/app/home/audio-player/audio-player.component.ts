@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
+import { Component, Input, OnInit, ViewChild, ElementRef } from "@angular/core";
 import { GameConfigService } from "src/services/game-config.service";
 import { fetchFromSpotify } from "src/services/api";
 
@@ -8,6 +8,7 @@ import { fetchFromSpotify } from "src/services/api";
   styleUrls: ["./audio-player.component.css"],
 })
 export class AudioPlayerComponent implements OnInit {
+  @Input() trackUrl?: string;
   @ViewChild("audioPlayer") audioPlayer!: ElementRef<HTMLAudioElement>;
   audioSrc: string = "";
   playDuration: number = 30000;

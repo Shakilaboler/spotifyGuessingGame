@@ -1,8 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { HttpClient } from "@angular/common/http";
+import { getSpotifyToken, fetchFromSpotify } from "src/services/api";
 import { GameConfigService } from "src/services/game-config.service";
-import { getSpotifyToken, request } from "src/services/api";
 
 const AUTH_ENDPOINT =
   "https://nuod0t2zoe.execute-api.us-east-2.amazonaws.com/FT-Classroom/spotify-auth-token";
@@ -21,35 +20,38 @@ export class ConfigurationComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private http: HttpClient,
     private gameConfigService: GameConfigService
   ) {}
 
   async ngOnInit() {
-    await this.authenticateAndFetchArtists();
+    await this.fetchArtists();
   }
 
-  async authenticateAndFetchArtists() {
-    const token = await getSpotifyToken();
-    if (token) {
-      await this.fetchArtists(token);
-    } else {
-      console.error("Error retrieving Spotify token");
-    }
-  }
-
-  async fetchArtists(token: string) {
+  async fetchArtists() {
     try {
-      const artistApiUrl = `https://api.spotify.com/v1/some-artist-endpoint`;
+      const token = await getSpotifyToken();
+      if (!token) {
+        throw new Error("Spotify token not found");
+      }
 
-      const response = await request(artistApiUrl, {
-        headers: { Authorization: `Bearer ${token}` },
+      const searchQuery = "";
+      const artistApiUrl = `search?q=${encodeURIComponent(
+        searchQuery
+      )}&type=artist`;
+
+      const artistsResponse = await fetchFromSpotify({
+        token,
+        endpoint: artistApiUrl,
       });
 
-      if (response && response.artists && response.artists.items) {
-        this.artists = response.artists.items;
+      if (
+        artistsResponse &&
+        artistsResponse.artists &&
+        artistsResponse.artists.items
+      ) {
+        this.artists = artistsResponse.artists.items;
       } else {
-        console.error("No artists found or invalid response structure");
+        throw new Error("No artists found or invalid response structure");
       }
     } catch (error) {
       console.error("Error fetching artists:", error);
