@@ -79,18 +79,6 @@ const authenticateWithSpotify = async () => {
   }
 };
 
-const fetchTopTracksOfArtist = async (artistId: string) => {
-  let token = localStorage.getItem(TOKEN_KEY);
-  if (!token) {
-    token = await authenticateWithSpotify();
-  }
-  if (token) {
-    const endpoint = `artists/${artistId}/top-tracks`;
-    const params = { market: "US" };
-    return fetchFromSpotify({ token, endpoint, params });
-  }
-};
-
 const getSpotifyToken = async (): Promise<string | null> => {
   let token = localStorage.getItem(TOKEN_KEY);
   if (!token) {
@@ -99,4 +87,4 @@ const getSpotifyToken = async (): Promise<string | null> => {
   return token;
 };
 
-export { fetchFromSpotify, fetchTopTracksOfArtist, getSpotifyToken };
+export { fetchFromSpotify, getSpotifyToken };

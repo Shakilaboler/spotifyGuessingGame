@@ -47,7 +47,7 @@
       </div>
 
       <div class="form-group">
-        <label for="artist">Select Artist:</label>
+        <label for="artist">Select Artist: Optional</label>
         <select id="artist" [(ngModel)]="selectedArtistId" name="artist">
           <option *ngFor="let artist of artists" [value]="artist.id">
             {{ artist.name }}

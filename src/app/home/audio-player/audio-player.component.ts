@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
 import { GameConfigService } from "src/services/game-config.service";
-import { getSpotifyToken, request } from "src/services/api";
+import { fetchFromSpotify } from "src/services/api";
 
 @Component({
   selector: "app-audio-player",
@@ -11,6 +11,7 @@ export class AudioPlayerComponent implements OnInit {
   @ViewChild("audioPlayer") audioPlayer!: ElementRef<HTMLAudioElement>;
   audioSrc: string = "";
   playDuration: number = 30000;
+  isArtistSelected: boolean = true;
 
   constructor(private gameConfigService: GameConfigService) {}
 
@@ -18,35 +19,32 @@ export class AudioPlayerComponent implements OnInit {
     this.setupGame();
   }
 
-  async setupGame() {
+  setupGame() {
     const config = this.gameConfigService.getConfig();
     this.playDuration = this.getDurationFromDifficulty(config.difficulty);
     if (config.artist) {
-      await this.fetchAndPlaySong(config.artist);
+      this.fetchAndPlaySong(config.artist);
+    } else {
+      this.isArtistSelected = false;
     }
   }
 
   async fetchAndPlaySong(artistId: string) {
+    const token = localStorage.getItem("whos-who-access-token");
+    if (!token) {
+      console.error("Spotify access token not found");
+      return;
+    }
+
     try {
-      const token = await getSpotifyToken();
-      if (!token) {
-        throw new Error("Failed to retrieve Spotify access token");
-      }
+      const response = await fetchFromSpotify({
+        token,
+        endpoint: `artists/${artistId}/top-tracks`,
+        params: { market: "US" },
+      });
 
-      const tracksResponse = await request(
-        `https://api.spotify.com/v1/artists/${artistId}/top-tracks`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { market: "US" },
-        }
-      );
-
-      if (
-        tracksResponse &&
-        tracksResponse.tracks &&
-        tracksResponse.tracks.length > 0
-      ) {
-        this.audioSrc = tracksResponse.tracks[0].preview_url;
+      if (response && response.tracks && response.tracks.length > 0) {
+        this.audioSrc = response.tracks[0].preview_url;
         this.playSong();
       } else {
         console.error("No tracks found for the artist");
@@ -73,7 +71,6 @@ export class AudioPlayerComponent implements OnInit {
     const audio = this.audioPlayer.nativeElement;
     audio.load();
     audio.play();
-
     setTimeout(() => audio.pause(), this.playDuration);
   }
 }

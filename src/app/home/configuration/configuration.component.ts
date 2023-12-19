@@ -1,8 +1,12 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient } from "@angular/common/http";
 import { GameConfigService } from "src/services/game-config.service";
 import { getSpotifyToken, request } from "src/services/api";
+
+const AUTH_ENDPOINT =
+  "https://nuod0t2zoe.execute-api.us-east-2.amazonaws.com/FT-Classroom/spotify-auth-token";
+const TOKEN_KEY = "whos-who-access-token";
 
 @Component({
   selector: "app-configuration",
@@ -28,7 +32,7 @@ export class ConfigurationComponent implements OnInit {
   async authenticateAndFetchArtists() {
     const token = await getSpotifyToken();
     if (token) {
-      this.fetchArtists(token);
+      await this.fetchArtists(token);
     } else {
       console.error("Error retrieving Spotify token");
     }
@@ -36,10 +40,7 @@ export class ConfigurationComponent implements OnInit {
 
   async fetchArtists(token: string) {
     try {
-      const searchQuery = "genre:rock";
-      const artistApiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-        searchQuery
-      )}&type=artist&limit=10`;
+      const artistApiUrl = `https://api.spotify.com/v1/some-artist-endpoint`;
 
       const response = await request(artistApiUrl, {
         headers: { Authorization: `Bearer ${token}` },
