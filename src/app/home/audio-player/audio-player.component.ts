@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
 import { GameConfigService } from "src/services/game-config.service";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { getSpotifyToken, request } from "src/services/api";
 
 @Component({
   selector: "app-audio-player",
@@ -10,55 +10,49 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 export class AudioPlayerComponent implements OnInit {
   @ViewChild("audioPlayer") audioPlayer!: ElementRef<HTMLAudioElement>;
   audioSrc: string = "";
-  trackList: string[] = [];
-  currentTrackIndex: number = 0;
   playDuration: number = 30000;
 
-  constructor(
-    private gameConfigService: GameConfigService,
-    private http: HttpClient
-  ) {}
+  constructor(private gameConfigService: GameConfigService) {}
 
   ngOnInit() {
     this.setupGame();
   }
 
-  setupGame() {
+  async setupGame() {
     const config = this.gameConfigService.getConfig();
     this.playDuration = this.getDurationFromDifficulty(config.difficulty);
     if (config.artist) {
-      this.fetchTopTracks(config.artist);
+      await this.fetchAndPlaySong(config.artist);
     }
   }
 
-  fetchTopTracks(artistId: string) {
-    const token = localStorage.getItem("whos-who-access-token");
-    if (!token) {
-      console.error("Spotify access token not found");
-      return;
-    }
-
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    const topTracksUrl = `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`;
-
-    this.http.get<any>(topTracksUrl, { headers }).subscribe(
-      (response) => {
-        this.trackList = response.tracks.map((track: any) => track.preview_url);
-        this.playNextTrack();
-      },
-      (error) => {
-        console.error("Error fetching top tracks:", error);
+  async fetchAndPlaySong(artistId: string) {
+    try {
+      const token = await getSpotifyToken();
+      if (!token) {
+        throw new Error("Failed to retrieve Spotify access token");
       }
-    );
-  }
 
-  playNextTrack() {
-    if (this.currentTrackIndex < this.trackList.length) {
-      this.audioSrc = this.trackList[this.currentTrackIndex];
-      this.currentTrackIndex++;
-      this.playSong();
-    } else {
-      console.log("No more tracks to play");
+      const tracksResponse = await request(
+        `https://api.spotify.com/v1/artists/${artistId}/top-tracks`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { market: "US" },
+        }
+      );
+
+      if (
+        tracksResponse &&
+        tracksResponse.tracks &&
+        tracksResponse.tracks.length > 0
+      ) {
+        this.audioSrc = tracksResponse.tracks[0].preview_url;
+        this.playSong();
+      } else {
+        console.error("No tracks found for the artist");
+      }
+    } catch (error) {
+      console.error("Error fetching tracks:", error);
     }
   }
 
@@ -77,13 +71,9 @@ export class AudioPlayerComponent implements OnInit {
 
   playSong() {
     const audio = this.audioPlayer.nativeElement;
-    audio.src = this.audioSrc;
     audio.load();
     audio.play();
 
-    setTimeout(() => {
-      audio.pause();
-      this.playNextTrack();
-    }, this.playDuration);
+    setTimeout(() => audio.pause(), this.playDuration);
   }
 }

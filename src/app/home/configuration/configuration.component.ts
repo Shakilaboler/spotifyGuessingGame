@@ -2,7 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { GameConfigService } from "src/services/game-config.service";
-import { getSpotifyToken } from "src/services/api";
+import { getSpotifyToken, request } from "src/services/api";
 
 @Component({
   selector: "app-configuration",
@@ -34,32 +34,25 @@ export class ConfigurationComponent implements OnInit {
     }
   }
 
-  fetchArtists(token: string) {
-    if (!token) {
-      console.error("No token available for Spotify API request");
-      return;
-    }
+  async fetchArtists(token: string) {
+    try {
+      const searchQuery = "genre:rock";
+      const artistApiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+        searchQuery
+      )}&type=artist&limit=10`;
 
-    const searchQuery = "genre:rock";
+      const response = await request(artistApiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (!searchQuery) {
-      console.error("Search query is empty");
-      return;
-    }
-
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    const artistApiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-      searchQuery
-    )}&type=artist&limit=10`;
-
-    this.http.get<any>(artistApiUrl, { headers }).subscribe(
-      (response) => {
+      if (response && response.artists && response.artists.items) {
         this.artists = response.artists.items;
-      },
-      (error) => {
-        console.error("Error fetching artists:", error);
+      } else {
+        console.error("No artists found or invalid response structure");
       }
-    );
+    } catch (error) {
+      console.error("Error fetching artists:", error);
+    }
   }
 
   onArtistSelection(artistId: string) {
