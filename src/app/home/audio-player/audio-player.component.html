@@ -1,7 +1,8 @@
 <div class="audio-player">
   <h2>Audio Player</h2>
   <audio #audioPlayer controls>
-    <source [src]="audioSrc" type="audio/mpeg" />
+    <!-- Use artist information to fetch the correct audio source -->
+    <source [src]="getAudioSource()" type="audio/mpeg" />
     Your browser does not support the audio element.
   </audio>
 </div>

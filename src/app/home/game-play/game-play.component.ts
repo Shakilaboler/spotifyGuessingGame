@@ -1,8 +1,11 @@
 // game-play.component.ts
 
-import { Component, OnInit } from "@angular/core";
+import { AfterViewInit, Component, OnInit, ViewChild } from "@angular/core";
 import { Router } from "@angular/router";
 import { fetchFromSpotify, fetchTopTracksOfArtist, getSpotifyToken, getRandomTrack, getWrongAnswers, Track } from "../../../services/api";
+import { AnswerTrackerService } from "src/services/answer-tracker.service";
+import { AudioPlayerComponent } from "../audio-player/audio-player.component";
+import { GameConfigService } from "src/services/game-config.service";
 
 
 async function getAdditionalWrongAnswer(correctTrack: Track): Promise<string | null> {
@@ -65,7 +68,7 @@ async function getAdditionalWrongAnswer(correctTrack: Track): Promise<string | n
   templateUrl: "./game-play.component.html",
   styleUrls: ["./game-play.component.css"],
 })
-export class GamePlayComponent implements OnInit {
+export class GamePlayComponent implements OnInit, AfterViewInit {
   countdown: number;
   answers: string[];
   selectedAnswer: string = "";
@@ -75,7 +78,9 @@ export class GamePlayComponent implements OnInit {
   showGamePlay: boolean = false;
   currentTrack: any; // Add this property to store the current track information
 
-  constructor(private router: Router) {
+  @ViewChild(AudioPlayerComponent) audioPlayer!: AudioPlayerComponent;
+
+  constructor(private router: Router, private answerTrackerService: AnswerTrackerService, private gameConfigService: GameConfigService) {
     this.countdown = 30;
     this.answers = [];
     this.gameplayMode = "infinite";
@@ -83,62 +88,73 @@ export class GamePlayComponent implements OnInit {
     this.currentTrack = {};
   }
 
+
   ngOnInit(): void {
     this.getNewQuestion();
     this.showGamePlay = true;
   }
 
-  async getNewQuestion() {
-  try {
-    const token = await getSpotifyToken();
-    const endpointFeaturedPlaylists = 'browse/featured-playlists';
-    const featuredPlaylistsResponse = await fetchFromSpotify({ token, endpoint: endpointFeaturedPlaylists });
-    const playlists = featuredPlaylistsResponse?.playlists?.items;
-
-    if (playlists && playlists.length > 0) {
-      const randomPlaylist = playlists[Math.floor(Math.random() * playlists.length)];
-      const playlistId = randomPlaylist.id;
-
-      const endpointTracks = `playlists/${playlistId}/tracks`;
-      const tracksResponse = await fetchFromSpotify({ token, endpoint: endpointTracks });
-
-      if (tracksResponse?.items?.length > 0) {
-        // Extract track information from the first track in the response
-        const firstTrack = tracksResponse.items[0].track;
-
-        // Set relevant information to the currentTrack property
-        this.currentTrack = {
-          albumArtUrl: firstTrack.album.images[0].url, // assuming the first image is the album art
-          correctAnswer: '', // Initialize correct answer
-          // Add other relevant properties here
-        };
-
-        const artistNames = firstTrack.artists.map((artist: { name: string }) => artist.name).join(', ');
-        const trackName = firstTrack.name;
-
-        // Set the correct answer
-        this.currentTrack.correctAnswer = `${trackName} by ${artistNames}`;
-
-        console.log("here " ,this.currentTrack)
-        // Generate answer choices
-        this.answers = await this.generateAnswerChoices();
-
-        // Make sure the correct answer is in the list of choices
-        if (!this.answers.includes(this.currentTrack.correctAnswer)) {
-          this.answers[Math.floor(Math.random() * this.answers.length)] = this.currentTrack.correctAnswer;
-        }
-        
-      } else {
-        console.error('No items found in the "items" array of Tracks Response');
-      }
-    } else {
-      console.error('No featured playlists found in the response');
+  ngAfterViewInit(): void {
+    // Ensure the audioPlayer is defined before calling setupGame
+    if (this.audioPlayer) {
+      console.log('AudioPlayerComponent is ready');
+      this.audioPlayer.setupGame();
     }
-  } catch (error) {
-    console.error("Error fetching new question:", error);
   }
-}
 
+  async getNewQuestion() {
+    try {
+      const token = await getSpotifyToken();
+      const endpointFeaturedPlaylists = 'browse/featured-playlists';
+      const featuredPlaylistsResponse = await fetchFromSpotify({ token, endpoint: endpointFeaturedPlaylists });
+      const playlists = featuredPlaylistsResponse?.playlists?.items;
+  
+      if (playlists && playlists.length > 0) {
+        const randomPlaylist = playlists[Math.floor(Math.random() * playlists.length)];
+        const playlistId = randomPlaylist.id;
+  
+        const endpointTracks = `playlists/${playlistId}/tracks`;
+        const tracksResponse = await fetchFromSpotify({ token, endpoint: endpointTracks });
+  
+        if (tracksResponse?.items?.length > 0) {
+          const firstTrack = tracksResponse.items[0].track;
+  
+          // Set relevant information to the currentTrack property
+          this.currentTrack = {
+            albumArtUrl: firstTrack.album.images[0].url,
+            correctAnswer: '',
+            artistId: firstTrack.artists[0].id, // Add artist ID
+            artistName: firstTrack.artists[0].name, // Add artist name
+            // Add other relevant properties here
+          };
+  
+          const artistNames = firstTrack.artists.map((artist: { name: string }) => artist.name).join(', ');
+          const trackName = firstTrack.name;
+  
+          // Set the correct answer
+          this.currentTrack.correctAnswer = `${trackName} by ${artistNames}`;
+  
+          console.log("here ", this.currentTrack);
+          // Generate answer choices
+          this.answers = await this.generateAnswerChoices();
+  
+          // Make sure the correct answer is in the list of choices
+          if (!this.answers.includes(this.currentTrack.correctAnswer)) {
+            this.answers[Math.floor(Math.random() * this.answers.length)] = this.currentTrack.correctAnswer;
+          }
+  
+          // Pass artist information to AudioPlayerComponent
+          this.audioPlayer.setupGame(this.currentTrack.artistId, this.currentTrack.artistName);
+        } else {
+          console.error('No items found in the "items" array of Tracks Response');
+        }
+      } else {
+        console.error('No featured playlists found in the response');
+      }
+    } catch (error) {
+      console.error("Error fetching new question:", error);
+    }
+  }
 async generateAnswerChoices(): Promise<string[]> {
   try {
     if (!this.currentTrack || !this.currentTrack.correctAnswer) {
@@ -235,11 +251,13 @@ async generateAnswerChoices(): Promise<string[]> {
       else {
         // Fetch a new question when the current question is finished
         console.log("Correct!")
+        this.answerTrackerService.incrementCorrectAnswerCount();
         await this.getNewQuestion();
       }
     }
     else {
       console.log("Correct!")
+      this.answerTrackerService.incrementCorrectAnswerCount();
       await this.getNewQuestion();
     }
   }

@@ -5,6 +5,7 @@
   <div *ngIf="showGamePlay">
     <!-- Display track information -->
     <img [src]="currentTrack.albumArtUrl" alt="Album Art">
+    <app-audio-player></app-audio-player>
     <div class="countdown">Time left: {{ countdown }}</div>
 
     <!-- Display answer choices -->

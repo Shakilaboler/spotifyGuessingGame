@@ -149,13 +149,14 @@ const fetchTopTracksOfArtist = async (artistId: string) => {
 
 const getSpotifyToken = async (): Promise<string | null> => {
   let token = localStorage.getItem(TOKEN_KEY);
+  //token = await authenticateWithSpotify();
 
   if (!token) {
     // Token not present or not valid, authenticate and get a new token
     token = await authenticateWithSpotify();
   }
 
-  //console.log('Access Token:', token);
+  console.log('Access Token:', token);
 
   return token;
 };

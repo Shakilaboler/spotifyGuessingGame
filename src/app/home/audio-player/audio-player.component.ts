@@ -11,19 +11,30 @@ export class AudioPlayerComponent implements OnInit {
   @ViewChild("audioPlayer") audioPlayer!: ElementRef<HTMLAudioElement>;
   audioSrc: string = "";
   playDuration: number = 30000;
+  artistId: string = "";
+  artistName: string = "";
 
   constructor(private gameConfigService: GameConfigService) {}
 
   ngOnInit() {
+    console.log('AudioPlayerComponent initialized');
     this.setupGame();
   }
 
-  async setupGame() {
+  async setupGame(artistId?: string, artistName?: string) {
+    this.artistId = artistId || this.artistId;
+    this.artistName = artistName || this.artistName;
+    
     const config = this.gameConfigService.getConfig();
     this.playDuration = this.getDurationFromDifficulty(config.difficulty);
-    if (config.artist) {
-      await this.fetchAndPlaySong(config.artist);
-    }
+    
+    // Use artist information to fetch and play the song
+    await this.fetchAndPlaySong(this.artistId);
+  }
+
+  getAudioSource(): string {
+    // Construct the audio source URL based on artist information
+    return `https://api.spotify.com/v1/artists/${this.artistId}/top-tracks?market=US`;
   }
 
   async fetchAndPlaySong(artistId: string) {
@@ -32,7 +43,7 @@ export class AudioPlayerComponent implements OnInit {
       if (!token) {
         throw new Error("Failed to retrieve Spotify access token");
       }
-
+  
       const tracksResponse = await request(
         `https://api.spotify.com/v1/artists/${artistId}/top-tracks`,
         {
@@ -40,13 +51,16 @@ export class AudioPlayerComponent implements OnInit {
           params: { market: "US" },
         }
       );
-
+  
+      console.log('API Response:', tracksResponse); // Log the entire response
+  
       if (
         tracksResponse &&
         tracksResponse.tracks &&
         tracksResponse.tracks.length > 0
       ) {
         this.audioSrc = tracksResponse.tracks[0].preview_url;
+        console.log('Audio Source URL:', this.audioSrc); // Log the audio source URL
         this.playSong();
       } else {
         console.error("No tracks found for the artist");
