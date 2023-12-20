@@ -88,4 +88,6 @@ export class HomeComponent {
   navigateToConfig() {
     this.router.navigate(["/configure"]);
   }
+
+  
 }

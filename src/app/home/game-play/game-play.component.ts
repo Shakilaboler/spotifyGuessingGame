@@ -4,11 +4,8 @@ import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import {
   fetchFromSpotify,
-  fetchTopTracksOfArtist,
-  getSpotifyToken,
-  getRandomTrack,
   getWrongAnswers,
-  Track,
+  getSpotifyToken,
 } from "../../../services/api";
 
 async function getAdditionalWrongAnswer(
