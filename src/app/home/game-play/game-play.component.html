@@ -1,14 +1,15 @@
+
 <div class="game-play-container">
   <h2>Game Play</h2>
 
-  <!-- Audio Player -->
-  <!-- <app-audio-player [audioSrc]="currentTrack.previewUrl"></app-audio-player> -->
-
   <div *ngIf="showGamePlay">
+    <!-- Display track information -->
+    <img [src]="currentTrack.albumArtUrl" alt="Album Art">
     <div class="countdown">Time left: {{ countdown }}</div>
 
+    <!-- Display answer choices -->
     <div class="answers">
-      <button *ngFor="let answer of answers" (click)="checkAnswer()">
+      <button *ngFor="let answer of answers" (click)="onAnswerSelect(answer)">
         {{ answer }}
       </button>
     </div>

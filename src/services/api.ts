@@ -4,7 +4,44 @@ import "whatwg-fetch";
 const SPOTIFY_ROOT = "https://api.spotify.com/v1";
 const AUTH_ENDPOINT =
   "https://nuod0t2zoe.execute-api.us-east-2.amazonaws.com/FT-Classroom/spotify-auth-token";
-const TOKEN_KEY = "whos-who-access-token";
+const TOKEN_KEY = "BQA3OmOsdzv0a0N3gKlw7UFUlb1-t5axnDWwcGE-Zh5TxFT9sZPX9ZhlLx0ZfSENUSzP4h3sop4MY0bCh0G8Ltoaf86TjsfV80MwMoQBg3Zpe1MmCn8";
+
+
+type Artist = {
+  name: string;
+  // Add other properties if needed
+};
+
+type Album = {
+  album_type: string;
+  artists: Artist[];
+  available_markets: string[];
+  external_urls: {
+    spotify: string;
+    // Add other properties if needed
+  };
+  href: string;
+  id: string;
+  images: {
+    // Image properties
+    // ...
+  }[];
+  name: string;
+  release_date: string;
+  release_date_precision: string;
+  total_tracks: number;
+  type: string;
+  uri: string;
+  // Add other properties if needed
+};
+
+type Track = {
+  name: string;
+  artists: Artist[];
+  uri: string;
+  id: string
+  // Add other properties if needed
+};
 
 /**
  * Parses the JSON returned by a network request
@@ -59,7 +96,19 @@ const fetchFromSpotify = ({ token, endpoint, params }: any) => {
     url += `?${paramString}`;
   }
   const options = { headers: { Authorization: `Bearer ${token}` } };
-  return request(url, options);
+  //console.log('Spotify API Request URL:', url);
+  //console.log('Spotify API Request Options:', options);
+
+  // Log the response from the Spotify API
+  return request(url, options)
+    .then(response => {
+      //console.log('Spotify API Response:', response);
+      return response;
+    })
+    .catch(error => {
+      console.error('Spotify API Error:', error);
+      throw error;
+    });
 };
 
 const authenticateWithSpotify = async () => {
@@ -67,6 +116,13 @@ const authenticateWithSpotify = async () => {
     const response = await fetch(AUTH_ENDPOINT);
     const data = await response.json();
     const accessToken = data.access_token;
+    
+    // Set the expiration time (adjust as needed)
+    const expirationTime = Math.floor(Date.now() / 1000) + data.expires_in;
+    localStorage.setItem('tokenExpiration', expirationTime.toString());
+
+    //console.log('Spotify API Authentication Response:', data);
+
     if (accessToken) {
       localStorage.setItem(TOKEN_KEY, accessToken);
       return accessToken;
@@ -93,10 +149,103 @@ const fetchTopTracksOfArtist = async (artistId: string) => {
 
 const getSpotifyToken = async (): Promise<string | null> => {
   let token = localStorage.getItem(TOKEN_KEY);
+
   if (!token) {
+    // Token not present or not valid, authenticate and get a new token
     token = await authenticateWithSpotify();
   }
+
+  //console.log('Access Token:', token);
+
   return token;
 };
 
-export { fetchFromSpotify, fetchTopTracksOfArtist, getSpotifyToken };
+
+const getRandomTrack = async (): Promise<Track | null> => {
+  try {
+    const token = await getSpotifyToken();
+    const endpointFeaturedPlaylists = 'browse/featured-playlists';
+    const featuredPlaylistsResponse = await fetchFromSpotify({ token, endpoint: endpointFeaturedPlaylists });
+    const playlists = featuredPlaylistsResponse?.playlists?.items;
+
+    if (playlists && playlists.length > 0) {
+      const randomPlaylist = playlists[Math.floor(Math.random() * playlists.length)];
+      const playlistId = randomPlaylist.id;
+
+      const endpointTracks = `playlists/${playlistId}/tracks`;
+      const tracksResponse = await fetchFromSpotify({ token, endpoint: endpointTracks });
+
+      if (tracksResponse?.items?.length > 0) {
+        // Extract track information from the first track in the response
+        const firstTrack = tracksResponse.items[0].track;
+        const randomTrack: Track = {
+          id: firstTrack.id,
+          name: firstTrack.name,
+          artists: firstTrack.artists,
+          uri: firstTrack.uri,
+          // Add other properties if needed
+        };
+
+        console.log('Random Track:', randomTrack);
+
+        return randomTrack;
+      } else {
+        console.error('No items found in the "items" array of Tracks Response');
+      }
+    } else {
+      console.error('No featured playlists found in the response');
+    }
+
+    console.error('No tracks found in the response');
+    return null;
+  } catch (error) {
+    console.error('Error fetching random track:', error);
+    return null;
+  }
+};
+
+const getWrongAnswers = async (correctTrack: any): Promise<{ correct: any, wrong: any[] } | null> => {
+  try {
+    const token = await getSpotifyToken();
+
+    const wrongAlbumsEndpoint = 'browse/featured-playlists';
+    const wrongAlbumsResponse = await fetchFromSpotify({ token, endpoint: wrongAlbumsEndpoint });
+    const wrongPlaylists = wrongAlbumsResponse?.playlists?.items;
+
+    if (wrongPlaylists && wrongPlaylists.length > 0) {
+      const randomWrongPlaylist = wrongPlaylists[Math.floor(Math.random() * wrongPlaylists.length)];
+      const wrongPlaylistId = randomWrongPlaylist.id;
+
+      const wrongTracksEndpoint = `playlists/${wrongPlaylistId}/tracks`;
+      const wrongTracksResponse = await fetchFromSpotify({ token, endpoint: wrongTracksEndpoint });
+
+      if (wrongTracksResponse?.items?.length > 0) {
+        // Extract track information from the first track in the response
+        const firstWrongTrack = wrongTracksResponse.items[0].track;
+        const randomWrongTrack: Track = {
+          id: firstWrongTrack.id,
+          name: firstWrongTrack.name,
+          artists: firstWrongTrack.artists,
+          uri: firstWrongTrack.uri,
+          // Add other properties if needed
+        };
+
+        console.log('Random Wrong Track:', randomWrongTrack);
+
+        return { correct: correctTrack, wrong: [randomWrongTrack] } as { correct: any, wrong: any[] };
+      } else {
+        console.error('No items found in the "items" array of Wrong Tracks Response');
+      }
+    } else {
+      console.error('No wrong playlists found in the response');
+    }
+
+    console.error('No wrong tracks found in the response');
+    return null;
+  } catch (error) {
+    console.error('Error fetching wrong answers:', error);
+    return null;
+  }
+};
+
+export { fetchFromSpotify, fetchTopTracksOfArtist, getSpotifyToken, getRandomTrack, getWrongAnswers, Track };
