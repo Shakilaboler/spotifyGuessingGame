@@ -96,9 +96,8 @@ export class GamePlayComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     // Ensure the audioPlayer is defined before calling setupGame
-    if (this.audioPlayer) {
-      console.log('AudioPlayerComponent is ready');
-      this.audioPlayer.setupGame();
+    if (this.audioPlayer && this.currentTrack.artistId) {
+      this.audioPlayer.setupGame(this.currentTrack.artistId, this.currentTrack.artistName);
     }
   }
 
@@ -108,13 +107,14 @@ export class GamePlayComponent implements OnInit, AfterViewInit {
       const endpointFeaturedPlaylists = 'browse/featured-playlists';
       const featuredPlaylistsResponse = await fetchFromSpotify({ token, endpoint: endpointFeaturedPlaylists });
       const playlists = featuredPlaylistsResponse?.playlists?.items;
-  
       if (playlists && playlists.length > 0) {
         const randomPlaylist = playlists[Math.floor(Math.random() * playlists.length)];
         const playlistId = randomPlaylist.id;
-  
         const endpointTracks = `playlists/${playlistId}/tracks`;
+        console.log('Endpoint Tracks:', endpointTracks);
+        console.log('Spotify Token:', token);
         const tracksResponse = await fetchFromSpotify({ token, endpoint: endpointTracks });
+        console.log('Tracks Response:', tracksResponse);
   
         if (tracksResponse?.items?.length > 0) {
           const firstTrack = tracksResponse.items[0].track;
@@ -134,7 +134,6 @@ export class GamePlayComponent implements OnInit, AfterViewInit {
           // Set the correct answer
           this.currentTrack.correctAnswer = `${trackName} by ${artistNames}`;
   
-          console.log("here ", this.currentTrack);
           // Generate answer choices
           this.answers = await this.generateAnswerChoices();
   
@@ -144,17 +143,31 @@ export class GamePlayComponent implements OnInit, AfterViewInit {
           }
   
           // Pass artist information to AudioPlayerComponent
-          this.audioPlayer.setupGame(this.currentTrack.artistId, this.currentTrack.artistName);
+          if (this.currentTrack.artistId) {
+            this.audioPlayer.setupGame(this.currentTrack.artistId, this.currentTrack.artistName);
+          } else {
+            console.error('Artist ID is null or undefined. Current Track:', this.currentTrack);
+            // Handle the case where artistId is undefined, if necessary
+            return null;
+          }
+  
+
         } else {
           console.error('No items found in the "items" array of Tracks Response');
         }
       } else {
         console.error('No featured playlists found in the response');
       }
+  
+      // Return the currentTrack object
+      return this.currentTrack;
     } catch (error) {
       console.error("Error fetching new question:", error);
+      // Return null or handle the error as needed
+      return null;
     }
   }
+
 async generateAnswerChoices(): Promise<string[]> {
   try {
     if (!this.currentTrack || !this.currentTrack.correctAnswer) {

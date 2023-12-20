@@ -83,6 +83,14 @@ const checkStatus = (response: any) => {
  * @return {object}           The response data
  */
 export const request = (url: any, options?: any) => {
+  // Check if options include params and convert them to query parameters
+  if (options && options.params) {
+    const paramString = new URLSearchParams(options.params).toString();
+    url += `?${paramString}`;
+    // Remove params from options to prevent duplicate inclusion
+    delete options.params;
+  }
+
   // eslint-disable-next-line no-undef
   return fetch(url, options).then(checkStatus).then(parseJSON);
 };
@@ -96,8 +104,8 @@ const fetchFromSpotify = ({ token, endpoint, params }: any) => {
     url += `?${paramString}`;
   }
   const options = { headers: { Authorization: `Bearer ${token}` } };
-  //console.log('Spotify API Request URL:', url);
-  //console.log('Spotify API Request Options:', options);
+  console.log('Spotify API Request URL:', url);
+  console.log('Spotify API Request Options:', options);
 
   // Log the response from the Spotify API
   return request(url, options)
@@ -113,15 +121,25 @@ const fetchFromSpotify = ({ token, endpoint, params }: any) => {
 
 const authenticateWithSpotify = async () => {
   try {
-    const response = await fetch(AUTH_ENDPOINT);
+    // Specify the desired scopes
+    const scopes = ['user-read-playback-state', 'user-modify-playback-state'];
+
+    // Construct the authentication URL with the specified scopes
+    const authUrl = `${AUTH_ENDPOINT}?scopes=${encodeURIComponent(scopes.join(' '))}`;
+
+    // Open the Spotify authentication URL in a new window or redirect the user to it
+    // For example, you can use window.open(authUrl) to open it in a new window
+
+    // After the user grants permission, obtain the access token as before
+    const response = await fetch(authUrl);
     const data = await response.json();
     const accessToken = data.access_token;
-    
+
     // Set the expiration time (adjust as needed)
     const expirationTime = Math.floor(Date.now() / 1000) + data.expires_in;
     localStorage.setItem('tokenExpiration', expirationTime.toString());
 
-    //console.log('Spotify API Authentication Response:', data);
+    console.log('Spotify API Authentication Response:', data);
 
     if (accessToken) {
       localStorage.setItem(TOKEN_KEY, accessToken);
@@ -149,7 +167,7 @@ const fetchTopTracksOfArtist = async (artistId: string) => {
 
 const getSpotifyToken = async (): Promise<string | null> => {
   let token = localStorage.getItem(TOKEN_KEY);
-  //token = await authenticateWithSpotify();
+  token = await authenticateWithSpotify();
 
   if (!token) {
     // Token not present or not valid, authenticate and get a new token

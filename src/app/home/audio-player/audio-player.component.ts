@@ -18,24 +18,49 @@ export class AudioPlayerComponent implements OnInit {
 
   ngOnInit() {
     console.log('AudioPlayerComponent initialized');
-    this.setupGame();
+    if (this.artistId) {
+      this.setupGame();
+    } else {
+      console.error('Artist ID is null or undefined.');
+      // Handle the case where artistId is undefined, if necessary
+    }
   }
 
-  async setupGame(artistId?: string, artistName?: string) {
+
+  async setupGame(artistId?: string, artistName?: string, token?: string) {
     this.artistId = artistId || this.artistId;
     this.artistName = artistName || this.artistName;
     
     const config = this.gameConfigService.getConfig();
+    
+    // Check if artistId is available, otherwise log an error
+    if (artistId) {
+      config.artist = artistId;
+
+    console.log('Artist ID from config:', config.artist);
     this.playDuration = this.getDurationFromDifficulty(config.difficulty);
     
     // Use artist information to fetch and play the song
     await this.fetchAndPlaySong(this.artistId);
+    } else {
+      console.error('Artist ID is undefined.');
+      // Handle the case where artistId is undefined, if necessary
+    }
+    
+    
   }
 
   getAudioSource(): string {
-    // Construct the audio source URL based on artist information
-    return `https://api.spotify.com/v1/artists/${this.artistId}/top-tracks?market=US`;
+    // Check if artistId is defined before constructing the URL
+    if (this.artistId) {
+      // Construct the audio source URL based on artist information
+      return `https://api.spotify.com/v1/artists/${this.artistId}/top-tracks?market=US`;
+    } else {
+      console.error('Artist ID is undefined. Unable to construct audio source URL.');
+      return '';  // Return an empty string or handle the case where artistId is undefined
+    }
   }
+
 
   async fetchAndPlaySong(artistId: string) {
     try {
@@ -43,7 +68,9 @@ export class AudioPlayerComponent implements OnInit {
       if (!token) {
         throw new Error("Failed to retrieve Spotify access token");
       }
-  
+      console.log('Artist ID:', artistId);
+      const url = `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`;
+      console.log('Request URL (audio-player):', url);
       const tracksResponse = await request(
         `https://api.spotify.com/v1/artists/${artistId}/top-tracks`,
         {
