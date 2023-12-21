@@ -1,6 +1,12 @@
 // game-play.component.ts
 
-import { AfterViewInit, Component, OnInit, ViewChild } from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  OnInit,
+  ViewChild,
+  NgZone,
+} from "@angular/core";
 import { Router } from "@angular/router";
 import {
   fetchFromSpotify,
@@ -13,6 +19,7 @@ import {
 import { AnswerTrackerService } from "src/services/answer-tracker.service";
 import { AudioPlayerComponent } from "../audio-player/audio-player.component";
 import { GameConfigService } from "src/services/game-config.service";
+import { TimerComponent } from "../timer/timer.component";
 
 async function getAdditionalWrongAnswer(
   correctTrack: Track
@@ -82,7 +89,9 @@ async function getAdditionalWrongAnswer(
   templateUrl: "./game-play.component.html",
   styleUrls: ["./game-play.component.css"],
 })
-export class GamePlayComponent implements OnInit, AfterViewInit {
+export class GamePlayComponent
+  implements OnInit, AfterViewInit, TimerComponent
+{
   countdown: number;
   answers: string[];
   selectedAnswer: string = "";
@@ -91,23 +100,53 @@ export class GamePlayComponent implements OnInit, AfterViewInit {
   questionsRemaining: number;
   showGamePlay: boolean = false;
   currentTrack: any; // Add this property to store the current track information
+  playDuration: number = 0;
+  timer: number = 0;
+  timerInterval: any;
+  selectedDifficulty: string = "";
+  initialTime: number = 0;
+  timeRemaining: number = 0;
 
   @ViewChild(AudioPlayerComponent) audioPlayer!: AudioPlayerComponent;
+  @ViewChild(TimerComponent) timerComponent!: TimerComponent;
 
   constructor(
     private router: Router,
     private answerTrackerService: AnswerTrackerService,
-    private gameConfigService: GameConfigService
+    private gameConfigService: GameConfigService,
+    private ngZone: NgZone
   ) {
     this.countdown = 30;
     this.answers = [];
     this.gameplayMode = "infinite";
     this.questionsRemaining = 10;
     this.currentTrack = {};
+    this.selectedDifficulty = this.gameConfigService.getDifficulty();
+
+    // Calculate the initial time based on the selected difficulty
+    this.initialTime = this.calculateInitialTime();
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.timerInterval);
+  }
+
+  calculateInitialTime(): number {
+    if (this.selectedDifficulty === "easy") {
+      return 30; // Set the initial time to 30 seconds for easy difficulty
+    } else if (this.selectedDifficulty === "medium") {
+      return 20; // Set the initial time to 20 seconds for medium difficulty
+    } else if (this.selectedDifficulty === "hard") {
+      return 15; // Set the initial time to 15 seconds for hard difficulty
+    } else {
+      // Handle any other cases or unknown difficulties here
+      return 0; // Return 0 if the difficulty is unknown or not provided
+    }
   }
 
   ngOnInit(): void {
     this.getNewQuestion();
+    this.startTimer();
     this.showGamePlay = true;
   }
 
@@ -119,6 +158,24 @@ export class GamePlayComponent implements OnInit, AfterViewInit {
         this.currentTrack.artistName
       );
     }
+  }
+
+  startTimer() {
+    this.timer = this.playDuration / 1000; // Initialize the timer with the duration in seconds
+
+    this.timerInterval = setInterval(() => {
+      this.ngZone.run(() => {
+        this.timer--; // Decrement the timer
+        if (this.timer === 0) {
+          this.resetTimer(); // Reset the timer when it reaches 0
+        }
+      });
+    }, 1000); // Update the timer every 1 second
+  }
+
+  resetTimer() {
+    clearInterval(this.timerInterval); // Clear the timer interval
+    this.timer = this.playDuration / 1000; // Reset the timer value
   }
 
   async getNewQuestion() {
@@ -305,7 +362,7 @@ export class GamePlayComponent implements OnInit, AfterViewInit {
   async checkAnswer(): Promise<void> {
     this.isCorrectAnswer =
       this.selectedAnswer === this.currentTrack.correctAnswer;
-    console.log("clicked");
+
     if (this.gameplayMode === "infinite" && !this.isCorrectAnswer) {
       this.router.navigate(["/leaderboard"]);
     } else if (this.gameplayMode === "quiz") {
@@ -314,20 +371,13 @@ export class GamePlayComponent implements OnInit, AfterViewInit {
       if (this.questionsRemaining === 0 || !this.isCorrectAnswer) {
         this.router.navigate(["/leaderboard"]);
       } else {
-        // Fetch a new question when the current question is finished
-        console.log("Correct!");
-        this.answerTrackerService.incrementCorrectAnswerCount();
         await this.getNewQuestion();
+        this.timerComponent.resetTimer();
       }
     } else {
-      console.log("Correct!");
-      this.answerTrackerService.incrementCorrectAnswerCount();
+      this.timerComponent.resetTimer(); // Reset the timer when a new question is displayed
       await this.getNewQuestion();
     }
-  }
-
-  navigateToConfigure() {
-    this.router.navigate(["/configure"]);
   }
 
   navigateToHome() {

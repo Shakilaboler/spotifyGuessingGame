@@ -160,4 +160,12 @@ export class AudioPlayerComponent implements OnInit {
 
     setTimeout(() => audio.pause(), this.playDuration);
   }
+
+  stopPlayback() {
+    const audio = this.audioPlayer.nativeElement;
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }
 }

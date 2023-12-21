@@ -1,1 +1,37 @@
-<p>leaderboard works!</p>
+<div class="background-container">
+  <div class="leaderboard-container">
+    <h1 class="game-over">{{ gameOverMessage }}</h1>
+    <!-- Add the "game-over" class -->
+    <div class="stats">
+      <p>Correct Answers: {{ correctAnswers }}</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()">
+      <label for="userName">Enter Your Name:</label>
+      <input
+        type="text"
+        id="userName"
+        [(ngModel)]="userName"
+        name="userName"
+        required
+      />
+      <br />
+      <button type="submit">Submit</button>
+    </form>
+
+    <div class="leaderboard-list">
+      <h2>Leaderboard</h2>
+      <ul>
+        <li *ngFor="let entry of leaderboard">
+          <span>{{ entry.name }}</span>
+          <span>{{ entry.score }} points</span>
+        </li>
+      </ul>
+    </div>
+
+    <button (click)="goToHomePage()">Go to Home Page</button>
+
+    <!-- Button to clear the leaderboard -->
+    <button (click)="clearLeaderboard()">Clear Leaderboard</button>
+  </div>
+</div>

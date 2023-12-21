@@ -9,6 +9,7 @@ import { ConfigurationComponent } from "./home/configuration/configuration.compo
 import { GamePlayComponent } from "./home/game-play/game-play.component";
 import { LeaderboardComponent } from "./home/leaderboard/leaderboard.component";
 import { HttpClientModule } from "@angular/common/http";
+import { TimerComponent } from './home/timer/timer.component';
 
 const routes: Routes = [
   { path: "home", component: HomeComponent },
@@ -26,6 +27,7 @@ const routes: Routes = [
     ConfigurationComponent,
     GamePlayComponent,
     LeaderboardComponent,
+    TimerComponent,
   ],
   imports: [
     BrowserModule,

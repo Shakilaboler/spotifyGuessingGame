@@ -1,4 +1,3 @@
-/* This will style the main container for the gameplay area */
 .global-background-container {
   background-image: url("src/assets/81GzlHrvBDL._AC_UF894,1000_QL80_.jpg");
   background-size: cover;
@@ -18,23 +17,81 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   max-width: 600px;
+  height: fit-content;
   width: 100%;
   margin: auto;
   color: #333;
   position: relative; /* Add this for positioning */
 }
 
-/* Style for the heading */
+.top-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(1, auto);
+  gap: 50px;
+}
+
+.top-buttons button {
+  background-color: #059831;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  gap: 50px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  align-items: left;
+  width: 10%; /* Make buttons take up 100% width of their grid cell */
+  height: auto; /* Let buttons adjust their height based on content */
+  display: flex;
+  justify-content: center; /* Center the button content horizontally */
+}
+
+.top-buttons {
+  display: flex;
+  align-items: center; /* Center items vertically */
+  margin-bottom: 20px;
+}
+
+.top-buttons h2 {
+  gap: 10px;
+  width: 80%;
+}
+
+/* Style for the content-container (h2 and countdown) */
+.content-container {
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; /* Center items horizontally */
+  margin-bottom: 20px;
+}
+
 .game-play-container h2 {
   text-align: center;
+  justify-content: space-between;
   margin-bottom: 20px;
   color: #333;
 }
 
+/* Style for the countdown timer container */
+.countdown-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Style for the countdown SVG */
+.countdown-svg {
+  width: 100px;
+  height: 100px;
+  justify-content: space-between;
+}
 /* Style for the album art image */
 .album-art {
-  max-width: 100%;
+  max-width: 100%; /* Adjust this for responsiveness */
   height: auto;
+  display: block; /* Center the image */
+  margin: 0 auto; /* Center the image horizontally */
   border-radius: 8px;
   margin-bottom: 20px;
 }
@@ -43,6 +100,7 @@
 audio {
   width: 100%;
   margin-bottom: 20px;
+  height: auto;
 }
 
 /* Style for the countdown timer */
@@ -51,6 +109,21 @@ audio {
   font-weight: bold;
   margin-bottom: 20px;
   text-align: center;
+}
+
+.app-audio-player {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.answers {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  grid-template-rows: repeat(2, auto); /* 2 rows, auto height */
+  gap: 10px; /* Add some spacing between buttons */
 }
 
 /* Style for the answer buttons */
@@ -62,19 +135,21 @@ audio {
   border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
-  margin: 5px;
-  width: calc(50% - 10px);
+  width: 100%; /* Make buttons take up 100% width of their grid cell */
+  height: auto; /* Let buttons adjust their height based on content */
+  display: flex;
+  justify-content: center; /* Center the button content horizontally */
+  align-items: center; /* Center the button content vertically */
 }
 
 .answers button:hover {
   background-color: #033611;
 }
 
-/* Style for the navigation buttons */
 .navigation-buttons {
   position: absolute;
-  top: 20px; /* Adjust the top position as needed */
-  left: 20px; /* Adjust the left position as needed */
+  top: 20px;
+  left: 20px;
 }
 
 .navigation-buttons button {
@@ -92,20 +167,6 @@ audio {
   background-color: #033611;
 }
 
-/* Style for the countdown timer container */
-.countdown-container {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  text-align: center;
-}
-
-/* Style for the countdown SVG */
-.countdown-svg {
-  width: 100px;
-  height: 100px;
-}
-
 /* Style for the countdown circle */
 .countdown-circle {
   fill: none;
@@ -119,21 +180,7 @@ audio {
 
 /* Style for the countdown text */
 .countdown-text {
-  font-size: 24px;
+  font-size: 30px;
   font-weight: bold;
-  fill: #0f0;
-}
-
-/* Animation for the countdown circle */
-@keyframes countdown-animation {
-  0% {
-    stroke-dashoffset: 283;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-.countdown-circle.active {
-  animation: countdown-animation 30s linear forwards;
+  fill: rgb(247, 47, 7);
 }
