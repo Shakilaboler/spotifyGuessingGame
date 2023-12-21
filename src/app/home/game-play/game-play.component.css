@@ -73,18 +73,11 @@
   color: #333;
 }
 
-/* Style for the countdown timer container */
-.countdown-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
 /* Style for the countdown SVG */
 .countdown-svg {
-  width: 100px;
-  height: 100px;
-  justify-content: space-between;
+  width: 50px;
+  height: 50px;
+  /* justify-content: space-between; */
 }
 /* Style for the album art image */
 .album-art {
@@ -170,8 +163,8 @@ audio {
 /* Style for the countdown circle */
 .countdown-circle {
   fill: none;
-  stroke: #0f0;
-  stroke-width: 5;
+  stroke: #ff5722; /* Change the stroke color to your desired color (e.g., orange) */
+  stroke-width: 8; /* Increase the stroke width for a thicker circle */
   stroke-dasharray: 283;
   stroke-dashoffset: 0;
   transform: rotate(-90deg);
@@ -182,5 +175,12 @@ audio {
 .countdown-text {
   font-size: 30px;
   font-weight: bold;
-  fill: rgb(247, 47, 7);
+  fill: rgb(247, 47, 7); /* Change the fill color to match the stroke color */
+  position: absolute; /* Position the text over the circle */
+  top: 50%;
+  left: 50%;
+  transform: translate(
+    -50%,
+    -50%
+  ); /* Center the text horizontally and vertically */
 }
