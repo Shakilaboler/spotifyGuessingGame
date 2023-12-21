@@ -2,6 +2,34 @@ import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
 import { GameConfigService } from "src/services/game-config.service";
 import { getSpotifyToken, request } from "src/services/api";
 
+interface SpotifyTrack {
+  album: {
+    // album properties
+  };
+  artists: {
+    // artists properties
+  }[];
+  disc_number: number;
+  duration_ms: number;
+  explicit: boolean;
+  external_ids: {
+    isrc: string;
+  };
+  external_urls: {
+    spotify: string;
+  };
+  href: string;
+  id: string;
+  is_local: boolean;
+  is_playable: boolean;
+  name: string;
+  popularity: number;
+  preview_url: string | null;
+  track_number: number;
+  type: string;
+  uri: string;
+}
+
 @Component({
   selector: "app-audio-player",
   templateUrl: "./audio-player.component.html",
@@ -68,7 +96,7 @@ export class AudioPlayerComponent implements OnInit {
       if (!token) {
         throw new Error("Failed to retrieve Spotify access token");
       }
-      console.log('Artist ID:', artistId);
+  
       const url = `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`;
       console.log('Request URL (audio-player):', url);
       const tracksResponse = await request(
@@ -86,9 +114,26 @@ export class AudioPlayerComponent implements OnInit {
         tracksResponse.tracks &&
         tracksResponse.tracks.length > 0
       ) {
-        this.audioSrc = tracksResponse.tracks[0].preview_url;
-        console.log('Audio Source URL:', this.audioSrc); // Log the audio source URL
-        this.playSong();
+        const playableTracks: SpotifyTrack[] = tracksResponse.tracks.filter(
+          (track: SpotifyTrack) => track.is_playable
+        );
+        
+        if (playableTracks.length > 0) {
+          // Pick the first playable track
+          const previewUrl = playableTracks[0].preview_url;
+  
+          if (previewUrl) {
+            this.audioSrc = previewUrl;
+            console.log('Audio Source URL:', this.audioSrc); // Log the audio source URL
+            this.playSong();
+          } else {
+            console.warn("No playable track found with a non-null preview URL");
+            // Handle the case where all playable tracks have null preview_url
+          }
+        } else {
+          console.warn("No playable tracks found");
+          // Handle the case where no playable tracks are available
+        }
       } else {
         console.error("No tracks found for the artist");
       }
