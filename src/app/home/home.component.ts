@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from "@angular/core";
+import { Component } from "@angular/core";
 import { Router } from "@angular/router";
 // import fetchFromSpotify, { request } from "../../services/api";
 
@@ -13,11 +13,6 @@ import { Router } from "@angular/router";
 })
 export class HomeComponent {
   constructor(private router: Router) {}
-
-  @HostListener("window:scroll", ["$event"])
-  onWindowScroll(e: Event): void {
-    window.scrollTo(0, 0); // Scrolls the window back to the top
-  }
 
   // genres: String[] = ["House", "Alternative", "J-Rock", "R&B"];
   // selectedGenre: String = "";
