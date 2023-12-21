@@ -1,14 +1,18 @@
 // game-play.component.ts
 
-import { Component, OnInit } from "@angular/core";
+import { AfterViewInit, Component, OnInit, ViewChild } from "@angular/core";
 import { Router } from "@angular/router";
 import {
   fetchFromSpotify,
+  fetchTopTracksOfArtist,
   getSpotifyToken,
   getRandomTrack,
   getWrongAnswers,
   Track,
 } from "../../../services/api";
+import { AnswerTrackerService } from "src/services/answer-tracker.service";
+import { AudioPlayerComponent } from "../audio-player/audio-player.component";
+import { GameConfigService } from "src/services/game-config.service";
 
 async function getAdditionalWrongAnswer(
   correctTrack: Track
@@ -78,7 +82,7 @@ async function getAdditionalWrongAnswer(
   templateUrl: "./game-play.component.html",
   styleUrls: ["./game-play.component.css"],
 })
-export class GamePlayComponent implements OnInit {
+export class GamePlayComponent implements OnInit, AfterViewInit {
   countdown: number;
   answers: string[];
   selectedAnswer: string = "";
@@ -88,7 +92,13 @@ export class GamePlayComponent implements OnInit {
   showGamePlay: boolean = false;
   currentTrack: any; // Add this property to store the current track information
 
-  constructor(private router: Router) {
+  @ViewChild(AudioPlayerComponent) audioPlayer!: AudioPlayerComponent;
+
+  constructor(
+    private router: Router,
+    private answerTrackerService: AnswerTrackerService,
+    private gameConfigService: GameConfigService
+  ) {
     this.countdown = 30;
     this.answers = [];
     this.gameplayMode = "infinite";
@@ -101,6 +111,16 @@ export class GamePlayComponent implements OnInit {
     this.showGamePlay = true;
   }
 
+  ngAfterViewInit(): void {
+    // Ensure the audioPlayer is defined before calling setupGame
+    if (this.audioPlayer && this.currentTrack.artistId) {
+      this.audioPlayer.setupGame(
+        this.currentTrack.artistId,
+        this.currentTrack.artistName
+      );
+    }
+  }
+
   async getNewQuestion() {
     try {
       const token = await getSpotifyToken();
@@ -110,26 +130,28 @@ export class GamePlayComponent implements OnInit {
         endpoint: endpointFeaturedPlaylists,
       });
       const playlists = featuredPlaylistsResponse?.playlists?.items;
-
       if (playlists && playlists.length > 0) {
         const randomPlaylist =
           playlists[Math.floor(Math.random() * playlists.length)];
         const playlistId = randomPlaylist.id;
-
         const endpointTracks = `playlists/${playlistId}/tracks`;
+        console.log("Endpoint Tracks:", endpointTracks);
+        console.log("Spotify Token:", token);
         const tracksResponse = await fetchFromSpotify({
           token,
           endpoint: endpointTracks,
         });
+        console.log("Tracks Response:", tracksResponse);
 
         if (tracksResponse?.items?.length > 0) {
-          // Extract track information from the first track in the response
           const firstTrack = tracksResponse.items[0].track;
 
           // Set relevant information to the currentTrack property
           this.currentTrack = {
-            albumArtUrl: firstTrack.album.images[0].url, // assuming the first image is the album art
-            correctAnswer: "", // Initialize correct answer
+            albumArtUrl: firstTrack.album.images[0].url,
+            correctAnswer: "",
+            artistId: firstTrack.artists[0].id, // Add artist ID
+            artistName: firstTrack.artists[0].name, // Add artist name
             // Add other relevant properties here
           };
 
@@ -141,7 +163,6 @@ export class GamePlayComponent implements OnInit {
           // Set the correct answer
           this.currentTrack.correctAnswer = `${trackName} by ${artistNames}`;
 
-          console.log("here ", this.currentTrack);
           // Generate answer choices
           this.answers = await this.generateAnswerChoices();
 
@@ -149,6 +170,21 @@ export class GamePlayComponent implements OnInit {
           if (!this.answers.includes(this.currentTrack.correctAnswer)) {
             this.answers[Math.floor(Math.random() * this.answers.length)] =
               this.currentTrack.correctAnswer;
+          }
+
+          // Pass artist information to AudioPlayerComponent
+          if (this.currentTrack.artistId) {
+            this.audioPlayer.setupGame(
+              this.currentTrack.artistId,
+              this.currentTrack.artistName
+            );
+          } else {
+            console.error(
+              "Artist ID is null or undefined. Current Track:",
+              this.currentTrack
+            );
+            // Handle the case where artistId is undefined, if necessary
+            return null;
           }
         } else {
           console.error(
@@ -158,8 +194,13 @@ export class GamePlayComponent implements OnInit {
       } else {
         console.error("No featured playlists found in the response");
       }
+
+      // Return the currentTrack object
+      return this.currentTrack;
     } catch (error) {
       console.error("Error fetching new question:", error);
+      // Return null or handle the error as needed
+      return null;
     }
   }
 
@@ -275,11 +316,21 @@ export class GamePlayComponent implements OnInit {
       } else {
         // Fetch a new question when the current question is finished
         console.log("Correct!");
+        this.answerTrackerService.incrementCorrectAnswerCount();
         await this.getNewQuestion();
       }
     } else {
       console.log("Correct!");
+      this.answerTrackerService.incrementCorrectAnswerCount();
       await this.getNewQuestion();
     }
+  }
+
+  navigateToConfigure() {
+    this.router.navigate(["/configure"]);
+  }
+
+  navigateToHome() {
+    this.router.navigate(["/home"]);
   }
 }

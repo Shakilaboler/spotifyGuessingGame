@@ -1,11 +1,8 @@
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
-import { getSpotifyToken, fetchFromSpotify } from "src/services/api";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { GameConfigService } from "src/services/game-config.service";
-
-const AUTH_ENDPOINT =
-  "https://nuod0t2zoe.execute-api.us-east-2.amazonaws.com/FT-Classroom/spotify-auth-token";
-const TOKEN_KEY = "whos-who-access-token";
+import { getSpotifyToken, request } from "src/services/api";
 
 @Component({
   selector: "app-configuration",
@@ -20,38 +17,38 @@ export class ConfigurationComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private http: HttpClient,
     private gameConfigService: GameConfigService
   ) {}
 
   async ngOnInit() {
-    await this.fetchArtists();
+    await this.authenticateAndFetchArtists();
   }
 
-  async fetchArtists() {
+  async authenticateAndFetchArtists() {
+    const token = await getSpotifyToken();
+    if (token) {
+      this.fetchArtists(token);
+    } else {
+      console.error("Error retrieving Spotify token");
+    }
+  }
+
+  async fetchArtists(token: string) {
     try {
-      const token = await getSpotifyToken();
-      if (!token) {
-        throw new Error("Spotify token not found");
-      }
-
-      const searchQuery = "";
-      const artistApiUrl = `search?q=${encodeURIComponent(
+      const searchQuery = "genre:rock";
+      const artistApiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
         searchQuery
-      )}&type=artist`;
+      )}&type=artist&limit=10`;
 
-      const artistsResponse = await fetchFromSpotify({
-        token,
-        endpoint: artistApiUrl,
+      const response = await request(artistApiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (
-        artistsResponse &&
-        artistsResponse.artists &&
-        artistsResponse.artists.items
-      ) {
-        this.artists = artistsResponse.artists.items;
+      if (response && response.artists && response.artists.items) {
+        this.artists = response.artists.items;
       } else {
-        throw new Error("No artists found or invalid response structure");
+        console.error("No artists found or invalid response structure");
       }
     } catch (error) {
       console.error("Error fetching artists:", error);

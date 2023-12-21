@@ -1,0 +1,139 @@
+/* This will style the main container for the gameplay area */
+.global-background-container {
+  background-image: url("src/assets/81GzlHrvBDL._AC_UF894,1000_QL80_.jpg");
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* Style for the game-play-container */
+.game-play-container {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 100%;
+  margin: auto;
+  color: #333;
+  position: relative; /* Add this for positioning */
+}
+
+/* Style for the heading */
+.game-play-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Style for the album art image */
+.album-art {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* Style for the audio player */
+audio {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Style for the countdown timer */
+.countdown {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Style for the answer buttons */
+.answers button {
+  background-color: #059831;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 5px;
+  width: calc(50% - 10px);
+}
+
+.answers button:hover {
+  background-color: #033611;
+}
+
+/* Style for the navigation buttons */
+.navigation-buttons {
+  position: absolute;
+  top: 20px; /* Adjust the top position as needed */
+  left: 20px; /* Adjust the left position as needed */
+}
+
+.navigation-buttons button {
+  background-color: #059831;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 5px;
+}
+
+.navigation-buttons button:hover {
+  background-color: #033611;
+}
+
+/* Style for the countdown timer container */
+.countdown-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  text-align: center;
+}
+
+/* Style for the countdown SVG */
+.countdown-svg {
+  width: 100px;
+  height: 100px;
+}
+
+/* Style for the countdown circle */
+.countdown-circle {
+  fill: none;
+  stroke: #0f0;
+  stroke-width: 5;
+  stroke-dasharray: 283;
+  stroke-dashoffset: 0;
+  transform: rotate(-90deg);
+  transition: stroke-dashoffset 1s linear;
+}
+
+/* Style for the countdown text */
+.countdown-text {
+  font-size: 24px;
+  font-weight: bold;
+  fill: #0f0;
+}
+
+/* Animation for the countdown circle */
+@keyframes countdown-animation {
+  0% {
+    stroke-dashoffset: 283;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.countdown-circle.active {
+  animation: countdown-animation 30s linear forwards;
+}
