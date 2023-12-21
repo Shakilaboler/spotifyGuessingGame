@@ -31,7 +31,7 @@ export class TimerComponent implements OnInit, OnDestroy {
       case "medium":
         return 20; // 45 seconds for medium difficulty
       case "hard":
-        return 15; // 30 seconds for hard difficulty
+        return 10; // 30 seconds for hard difficulty
       default:
         return 30; // Default to easy difficulty
     }

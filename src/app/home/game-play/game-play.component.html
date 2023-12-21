@@ -15,12 +15,16 @@
       </div>
 
       <div *ngIf="showGamePlay">
-        <img
-          *ngIf="currentTrack?.albumArtUrl"
-          [src]="currentTrack.albumArtUrl"
-          alt="Album Art"
-          class="album-art"
-        />
+        <div class="album-art-container">
+          <img
+            *ngIf="currentTrack?.albumArtUrl"
+            [src]="currentTrack.albumArtUrl"
+            alt="Album Art"
+            class="album-art"
+            [class.hidden]="!showAlbumArt"
+          />
+          <div class="question-mark-overlay" *ngIf="!showAlbumArt">?</div>
+        </div>
         <div class="app-audio-player">
           <app-audio-player></app-audio-player>
         </div>
@@ -28,8 +32,6 @@
           <button
             *ngFor="let answer of answers"
             (click)="onAnswerSelect(answer)"
-            [style.top.px]="0"
-            [style.left.px]="0"
           >
             {{ answer }}
           </button>

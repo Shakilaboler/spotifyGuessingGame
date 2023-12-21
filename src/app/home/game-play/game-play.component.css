@@ -89,6 +89,28 @@
   margin-bottom: 20px;
 }
 
+.album-art-container {
+  position: relative;
+}
+
+.album-art.hidden {
+  visibility: hidden;
+}
+
+.question-mark-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom right, #ffd700, #ffa500);
+  color: white;
+  font-size: 5em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 /* Style for the audio player */
 audio {
   width: 100%;

@@ -106,6 +106,7 @@ export class GamePlayComponent
   selectedDifficulty: string = "";
   initialTime: number = 0;
   timeRemaining: number = 0;
+  showAlbumArt: boolean = false;
 
   @ViewChild(AudioPlayerComponent) audioPlayer!: AudioPlayerComponent;
   @ViewChild(TimerComponent) timerComponent!: TimerComponent;
@@ -170,12 +171,12 @@ export class GamePlayComponent
           this.resetTimer(); // Reset the timer when it reaches 0
         }
       });
-    }, 1000); // Update the timer every 1 second
+    }, 1000);
   }
 
   resetTimer() {
-    clearInterval(this.timerInterval); // Clear the timer interval
-    this.timer = this.playDuration / 1000; // Reset the timer value
+    clearInterval(this.timerInterval);
+    this.timer = this.initialTime; // Reset timer to initial value
   }
 
   async getNewQuestion() {
@@ -243,6 +244,8 @@ export class GamePlayComponent
             // Handle the case where artistId is undefined, if necessary
             return null;
           }
+          this.resetTimer();
+          this.startTimer();
         } else {
           console.error(
             'No items found in the "items" array of Tracks Response'
@@ -357,6 +360,7 @@ export class GamePlayComponent
   onAnswerSelect(answer: string): void {
     this.selectedAnswer = answer;
     this.checkAnswer();
+    this.showAlbumArt = true;
   }
 
   userScore: number = 0; // Add this property to keep track of the user's score
