@@ -62,6 +62,8 @@ export class ConfigurationComponent implements OnInit {
   submitConfig() {
     this.gameConfigService.setArtist(this.selectedArtistId);
     this.gameConfigService.setDifficulty(this.selectedDifficulty);
+    console.log(this.gameplayMode);
+    this.gameConfigService.setGameplayMode(this.gameplayMode);
     console.log("Game configuration saved");
     this.router.navigate(["/play"]);
   }

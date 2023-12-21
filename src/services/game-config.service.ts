@@ -6,6 +6,7 @@ import { Injectable } from "@angular/core";
 export class GameConfigService {
   private artist: string | null = null;
   private difficulty: string = "easy";
+  private gameplayMode: string = "infinite";
 
   constructor() {}
 
@@ -23,6 +24,14 @@ export class GameConfigService {
 
   getDifficulty(): string {
     return this.difficulty;
+  }
+
+  setGameplayMode(gameplayMode: string) {
+    this.gameplayMode = gameplayMode;
+  }
+
+  getGameplayMode(): string {
+    return this.gameplayMode;
   }
 
   getConfig() {
