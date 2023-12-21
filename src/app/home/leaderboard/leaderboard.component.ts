@@ -66,6 +66,12 @@ export class LeaderboardComponent implements OnInit {
     this.router.navigate(["/home"]);
   }
 
+  goToGamePlay() {
+    // Navigate to the home page
+    this.answerTrackerService.resetCorrectAnswers();
+    this.router.navigate(["/play"]);
+  }
+
   clearLeaderboard() {
     // Clear the leaderboard
     this.leaderboard = [];
