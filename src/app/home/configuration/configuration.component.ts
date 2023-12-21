@@ -22,6 +22,7 @@ export class ConfigurationComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    this.gameplayMode = "infinite";
     await this.authenticateAndFetchArtists();
   }
 
@@ -62,7 +63,6 @@ export class ConfigurationComponent implements OnInit {
   submitConfig() {
     this.gameConfigService.setArtist(this.selectedArtistId);
     this.gameConfigService.setDifficulty(this.selectedDifficulty);
-    console.log(this.gameplayMode);
     this.gameConfigService.setGameplayMode(this.gameplayMode);
     console.log("Game configuration saved");
     this.router.navigate(["/play"]);

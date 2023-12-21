@@ -118,7 +118,7 @@ export class GamePlayComponent
   ) {
     this.countdown = 30;
     this.answers = [];
-    this.gameplayMode = "infinite";
+    this.gameplayMode = this.gameConfigService.getGameplayMode();
     this.questionsRemaining = 10;
     this.currentTrack = {};
     this.selectedDifficulty = this.gameConfigService.getDifficulty();
