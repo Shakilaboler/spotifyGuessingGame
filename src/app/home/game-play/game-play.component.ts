@@ -359,25 +359,44 @@ export class GamePlayComponent
     this.checkAnswer();
   }
 
+  userScore: number = 0; // Add this property to keep track of the user's score
+
   async checkAnswer(): Promise<void> {
     this.isCorrectAnswer =
       this.selectedAnswer === this.currentTrack.correctAnswer;
 
-    if (this.gameplayMode === "infinite" && !this.isCorrectAnswer) {
-      this.router.navigate(["/leaderboard"]);
-    } else if (this.gameplayMode === "quiz") {
-      this.questionsRemaining -= 1;
+    if (this.isCorrectAnswer) {
+      // Increment the user's score for a correct answer
+      this.userScore++;
+      this.answerTrackerService.incrementCorrectAnswerCount();
 
-      if (this.questionsRemaining === 0 || !this.isCorrectAnswer) {
-        this.router.navigate(["/leaderboard"]);
+      if (this.gameplayMode === "quiz") {
+        this.questionsRemaining -= 1;
+
+        if (this.questionsRemaining > 0) {
+          // If there are more questions, fetch the next question
+          await this.getNewQuestion();
+          this.timerComponent.resetTimer();
+        } else {
+          // If no more questions, navigate to the leaderboard
+          this.navigateToLeaderboard();
+        }
       } else {
+        // For infinite mode, just fetch the next question
         await this.getNewQuestion();
         this.timerComponent.resetTimer();
       }
     } else {
-      this.timerComponent.resetTimer(); // Reset the timer when a new question is displayed
-      await this.getNewQuestion();
+      // If the answer is wrong, navigate to the leaderboard
+      this.navigateToLeaderboard();
     }
+  }
+
+  navigateToLeaderboard() {
+    // Navigate to leaderboard and pass the score
+    this.router.navigate(["/leaderboard"], {
+      state: { score: this.userScore },
+    });
   }
 
   navigateToHome() {

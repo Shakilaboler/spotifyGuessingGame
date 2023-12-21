@@ -4,6 +4,10 @@ import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { AnswerTrackerService } from "src/services/answer-tracker.service";
 
+interface RouterState {
+  score: number;
+}
+
 @Component({
   selector: "app-leaderboard",
   templateUrl: "./leaderboard.component.html",
@@ -25,6 +29,10 @@ export class LeaderboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const navigation = this.router.getCurrentNavigation();
+    const state = navigation?.extras.state as RouterState;
+    this.correctAnswers = state ? state.score : 0;
+
     // Retrieve the number of correct answers from the AnswerTrackerService
     this.correctAnswers = this.answerTrackerService.getCorrectAnswerCount();
     // Retrieve leaderboard data from a service or storage
