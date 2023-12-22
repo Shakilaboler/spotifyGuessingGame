@@ -1,16 +1,52 @@
-<div class="game-play-container">
-  <h2>Game Play</h2>
+<app-timer [selectedDifficulty]="selectedDifficulty"></app-timer>
 
-  <!-- Audio Player -->
-  <!-- <app-audio-player [audioSrc]="currentTrack.previewUrl"></app-audio-player> -->
+<div class="global-background-container">
+  <div class="background-container">
+    <div class="game-play-container">
+      <div class="top-buttons">
+        <button type="button" (click)="navigateToHome()">Home</button>
+        <h2>Game Play</h2>
+        <svg class="countdown-svg">
+          <circle class="countdown-circle" cx="50" cy="50" r="45"></circle>
+          <text class="countdown-text" x="50" y="60" text-anchor="middle">
+            {{ timerComponent?.timeRemaining }}
+          </text>
+        </svg>
+      </div>
+      <div
+        class="answer-message"
+        *ngIf="showAlbumArt"
+        [class.correct-answer]="isCorrectAnswer"
+        [class.incorrect-answer]="!isCorrectAnswer"
+      >
+        {{ answerMessage }}
+      </div>
 
-  <div *ngIf="showGamePlay">
-    <div class="countdown">Time left: {{ countdown }}</div>
-
-    <div class="answers">
-      <button *ngFor="let answer of answers" (click)="checkAnswer()">
-        {{ answer }}
-      </button>
+      <div *ngIf="showGamePlay">
+        <div class="album-art-container">
+          <img
+            *ngIf="currentTrack?.albumArtUrl"
+            [src]="currentTrack.albumArtUrl"
+            alt="Album Art"
+            class="album-art"
+          />
+          <div class="question-mark-overlay" *ngIf="!showAlbumArt">?</div>
+        </div>
+        <div *ngIf="isLoading" class="loading-indicator">
+          Loading next song...
+        </div>
+        <div class="app-audio-player">
+          <app-audio-player (audioLoaded)="onAudioLoaded()"></app-audio-player>
+        </div>
+        <div class="answers">
+          <button
+            *ngFor="let answer of answers"
+            (click)="onAnswerSelect(answer)"
+          >
+            {{ answer }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

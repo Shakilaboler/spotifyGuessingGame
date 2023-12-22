@@ -45,15 +45,15 @@
           <option value="hard">Hard - 10 seconds of playback</option>
         </select>
       </div>
-
+      <!-- 
       <div class="form-group">
-        <label for="artist">Select Artist:</label>
+        <label for="artist">Select Artist: Optional</label>
         <select id="artist" [(ngModel)]="selectedArtistId" name="artist">
           <option *ngFor="let artist of artists" [value]="artist.id">
             {{ artist.name }}
           </option>
         </select>
-      </div>
+      </div> -->
 
       <button type="button" (click)="navigateToHome()">Home</button>
       <button type="submit">Start Game</button>

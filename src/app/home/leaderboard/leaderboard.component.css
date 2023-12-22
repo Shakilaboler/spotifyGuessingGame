@@ -1,0 +1,102 @@
+.background-container {
+  background-image: url("src/assets/81GzlHrvBDL._AC_UF894,1000_QL80_.jpg");
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.leaderboard-container {
+  text-align: center;
+  background-color: #fff;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin: 20px auto;
+  width: 40%;
+  min-height: auto;
+}
+
+.stats {
+  margin: 10px 0;
+}
+
+label {
+  font-weight: bold;
+}
+
+input[type="text"] {
+  width: 80%;
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button[type="submit"] {
+  background-color: #059831;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.leaderboard-list {
+  margin-top: 20px;
+}
+
+h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+button {
+  background-color: #059831;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+  margin: 2%;
+}
+
+button:hover {
+  background-color: #033611;
+}
+
+.game-over {
+  font-size: 40px;
+  font-family: "ArcadeClassic", sans-serif;
+  color: red;
+  animation: blinkRed 1.5s 4;
+}
+
+@keyframes blinkRed {
+  0% {
+    color: red;
+  }
+  50% {
+    color: transparent;
+  }
+  100% {
+    color: red;
+  }
+}
