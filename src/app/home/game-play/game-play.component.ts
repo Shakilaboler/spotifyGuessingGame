@@ -373,7 +373,6 @@ export class GamePlayComponent
         this.timerComponent.resetTimer();
         this.timerComponent.startTimer();
       } else {
-        d;
         this.navigateToLeaderboard();
       }
     } else if (this.gameplayMode === "infinite") {
