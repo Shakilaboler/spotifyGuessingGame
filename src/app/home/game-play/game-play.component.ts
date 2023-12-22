@@ -370,23 +370,16 @@ export class GamePlayComponent
       this.questionsRemaining -= 1;
 
       if (this.questionsRemaining > 0) {
-        // Continue to the next question
         await this.getNewQuestion();
         this.timerComponent.resetTimer();
         this.timerComponent.startTimer();
       } else {
-        // No more questions remaining, navigate to leaderboard
         this.navigateToLeaderboard();
       }
     } else if (this.gameplayMode === "infinite") {
       if (!this.isCorrectAnswer) {
-        // In "infinite" mode, don't navigate to leaderboard on incorrect answer
-        // Get the next question instead
-        await this.getNewQuestion();
-        this.timerComponent.resetTimer();
-        this.timerComponent.startTimer();
+        this.navigateToLeaderboard();
       } else {
-        // Continue to the next question
         await this.getNewQuestion();
         this.timerComponent.resetTimer();
         this.timerComponent.startTimer();
