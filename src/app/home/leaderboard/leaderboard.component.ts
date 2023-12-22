@@ -33,21 +33,18 @@ export class LeaderboardComponent implements OnInit {
     const state = navigation?.extras.state as RouterState;
     this.correctAnswers = state ? state.score : 0;
 
-    // Retrieve the number of correct answers from the AnswerTrackerService
     this.correctAnswers = this.answerTrackerService.getCorrectAnswerCount();
-    // Retrieve leaderboard data from a service or storage
+
     this.loadLeaderboard();
   }
 
   onSubmit(): void {
-    // Add the user's name and score to the leaderboard
     this.addToLeaderboard();
 
     this.saveLeaderboard();
   }
 
   private loadLeaderboard() {
-    // Load leaderboard from localStorage
     const savedLeaderboard = localStorage.getItem("leaderboard");
 
     if (savedLeaderboard) {
@@ -56,43 +53,32 @@ export class LeaderboardComponent implements OnInit {
   }
 
   private saveLeaderboard() {
-    // Save leaderboard to localStorage
     localStorage.setItem("leaderboard", JSON.stringify(this.leaderboard));
   }
 
   goToHomePage() {
-    // Navigate to the home page
     this.answerTrackerService.resetCorrectAnswers();
     this.router.navigate(["/home"]);
   }
 
   goToGamePlay() {
-    // Navigate to the home page
     this.answerTrackerService.resetCorrectAnswers();
     this.router.navigate(["/play"]);
   }
 
   clearLeaderboard() {
-    // Clear the leaderboard
     this.leaderboard = [];
 
-    // Save the empty leaderboard to localStorage
     this.saveLeaderboard();
   }
 
   addToLeaderboard(): void {
-    // Validate if a user name is provided
     if (this.userName.trim() === "") {
-      // Handle the case where the user name is empty
       return;
     }
 
-    // Add the user to the leaderboard
     this.leaderboard.push({ name: this.userName, score: this.correctAnswers });
 
-    // Sort the leaderboard based on scores in descending order
     this.leaderboard.sort((a, b) => b.score - a.score);
-
-    // Update leaderboard data in a service or storage if needed
   }
 }

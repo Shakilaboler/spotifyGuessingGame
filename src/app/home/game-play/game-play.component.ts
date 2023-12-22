@@ -1,5 +1,3 @@
-// game-play.component.ts
-
 import {
   AfterViewInit,
   Component,
@@ -10,9 +8,7 @@ import {
 import { Router } from "@angular/router";
 import {
   fetchFromSpotify,
-  fetchTopTracksOfArtist,
   getSpotifyToken,
-  getRandomTrack,
   getWrongAnswers,
   Track,
 } from "../../../services/api";
@@ -27,7 +23,6 @@ async function getAdditionalWrongAnswer(
   try {
     const token = await getSpotifyToken();
 
-    // Fetch featured playlists to get an additional wrong answer
     const featuredPlaylistsEndpoint = "browse/featured-playlists";
     const featuredPlaylistsParams = { limit: 1 };
     const featuredPlaylistsResponse = await fetchFromSpotify({
@@ -43,7 +38,6 @@ async function getAdditionalWrongAnswer(
       const featuredPlaylistId =
         featuredPlaylistsResponse.playlists.items[0].id;
 
-      // Fetch tracks from the featured playlist
       const featuredPlaylistTracksEndpoint = `playlists/${featuredPlaylistId}/tracks`;
       const featuredPlaylistTracksResponse = await fetchFromSpotify({
         token,
@@ -51,12 +45,10 @@ async function getAdditionalWrongAnswer(
       });
 
       if (featuredPlaylistTracksResponse?.items?.length > 0) {
-        // Select a random track index
         const randomIndex = Math.floor(
           Math.random() * featuredPlaylistTracksResponse.items.length
         );
 
-        // Ensure the selected track is different from the correct track
         if (
           featuredPlaylistTracksResponse.items[randomIndex].track.name !==
             correctTrack.name ||
@@ -74,12 +66,10 @@ async function getAdditionalWrongAnswer(
       console.error("No featured playlists found in the response");
     }
 
-    // Return null if unable to fetch an additional wrong answer
     return null;
   } catch (error) {
     console.error("Error fetching additional wrong answer:", error);
 
-    // Return null in case of an error
     return null;
   }
 }
@@ -99,7 +89,7 @@ export class GamePlayComponent
   gameplayMode: string;
   questionsRemaining: number;
   showGamePlay: boolean = false;
-  currentTrack: any; // Add this property to store the current track information
+  currentTrack: any;
   playDuration: number = 0;
   timer: number = 0;
   timerInterval: any;
@@ -107,6 +97,8 @@ export class GamePlayComponent
   initialTime: number = 0;
   timeRemaining: number = 0;
   showAlbumArt: boolean = false;
+  isLoading: boolean = false;
+  answerMessage: string = "";
 
   @ViewChild(AudioPlayerComponent) audioPlayer!: AudioPlayerComponent;
   @ViewChild(TimerComponent) timerComponent!: TimerComponent;
@@ -120,11 +112,10 @@ export class GamePlayComponent
     this.countdown = 30;
     this.answers = [];
     this.gameplayMode = "infinite";
-    this.questionsRemaining = 10;
+    this.questionsRemaining = 5;
     this.currentTrack = {};
     this.selectedDifficulty = this.gameConfigService.getDifficulty();
 
-    // Calculate the initial time based on the selected difficulty
     this.initialTime = this.calculateInitialTime();
   }
 
@@ -134,25 +125,24 @@ export class GamePlayComponent
 
   calculateInitialTime(): number {
     if (this.selectedDifficulty === "easy") {
-      return 30; // Set the initial time to 30 seconds for easy difficulty
+      return 30;
     } else if (this.selectedDifficulty === "medium") {
-      return 20; // Set the initial time to 20 seconds for medium difficulty
+      return 20;
     } else if (this.selectedDifficulty === "hard") {
-      return 15; // Set the initial time to 15 seconds for hard difficulty
+      return 10;
     } else {
-      // Handle any other cases or unknown difficulties here
-      return 0; // Return 0 if the difficulty is unknown or not provided
+      return 0;
     }
   }
 
   ngOnInit(): void {
+    this.isLoading = true;
     this.getNewQuestion();
     this.startTimer();
     this.showGamePlay = true;
   }
 
   ngAfterViewInit(): void {
-    // Ensure the audioPlayer is defined before calling setupGame
     if (this.audioPlayer && this.currentTrack.artistId) {
       this.audioPlayer.setupGame(
         this.currentTrack.artistId,
@@ -161,14 +151,18 @@ export class GamePlayComponent
     }
   }
 
+  onAudioLoaded(): void {
+    this.startTimer();
+  }
+
   startTimer() {
-    this.timer = this.playDuration / 1000; // Initialize the timer with the duration in seconds
+    this.timer = this.playDuration / 1000;
 
     this.timerInterval = setInterval(() => {
       this.ngZone.run(() => {
-        this.timer--; // Decrement the timer
+        this.timer--;
         if (this.timer === 0) {
-          this.resetTimer(); // Reset the timer when it reaches 0
+          this.resetTimer();
         }
       });
     }, 1000);
@@ -176,7 +170,7 @@ export class GamePlayComponent
 
   resetTimer() {
     clearInterval(this.timerInterval);
-    this.timer = this.initialTime; // Reset timer to initial value
+    this.timer = this.initialTime;
   }
 
   async getNewQuestion() {
@@ -204,13 +198,11 @@ export class GamePlayComponent
         if (tracksResponse?.items?.length > 0) {
           const firstTrack = tracksResponse.items[0].track;
 
-          // Set relevant information to the currentTrack property
           this.currentTrack = {
             albumArtUrl: firstTrack.album.images[0].url,
             correctAnswer: "",
-            artistId: firstTrack.artists[0].id, // Add artist ID
-            artistName: firstTrack.artists[0].name, // Add artist name
-            // Add other relevant properties here
+            artistId: firstTrack.artists[0].id,
+            artistName: firstTrack.artists[0].name,
           };
 
           const artistNames = firstTrack.artists
@@ -218,19 +210,15 @@ export class GamePlayComponent
             .join(", ");
           const trackName = firstTrack.name;
 
-          // Set the correct answer
           this.currentTrack.correctAnswer = `${trackName} by ${artistNames}`;
 
-          // Generate answer choices
           this.answers = await this.generateAnswerChoices();
 
-          // Make sure the correct answer is in the list of choices
           if (!this.answers.includes(this.currentTrack.correctAnswer)) {
             this.answers[Math.floor(Math.random() * this.answers.length)] =
               this.currentTrack.correctAnswer;
           }
 
-          // Pass artist information to AudioPlayerComponent
           if (this.currentTrack.artistId) {
             this.audioPlayer.setupGame(
               this.currentTrack.artistId,
@@ -241,7 +229,7 @@ export class GamePlayComponent
               "Artist ID is null or undefined. Current Track:",
               this.currentTrack
             );
-            // Handle the case where artistId is undefined, if necessary
+
             return null;
           }
           this.resetTimer();
@@ -255,11 +243,10 @@ export class GamePlayComponent
         console.error("No featured playlists found in the response");
       }
 
-      // Return the currentTrack object
       return this.currentTrack;
     } catch (error) {
       console.error("Error fetching new question:", error);
-      // Return null or handle the error as needed
+
       return null;
     }
   }
@@ -271,14 +258,12 @@ export class GamePlayComponent
         return [] as string[];
       }
 
-      // Step 2: Get wrong answers
       const answers = await getWrongAnswers(this.currentTrack);
 
       console.log("Correct Answer:", this.currentTrack.correctAnswer);
       console.log("Current Track:", this.currentTrack);
 
       if (answers && answers.wrong) {
-        // Map wrong answers from the response
         const wrongAnswers: string[] = answers.wrong.map(
           (wrongTrack: Track | undefined) => {
             if (
@@ -293,19 +278,16 @@ export class GamePlayComponent
           }
         );
 
-        // Remove empty strings from wrong answers
         const filteredWrongAnswers = wrongAnswers.filter(
           (wrongAnswer) => wrongAnswer !== ""
         );
 
-        // Ensure you have at least 1 unique wrong answer
         while (filteredWrongAnswers.length < 1) {
           const additionalWrongAnswer = await getAdditionalWrongAnswer(
             this.currentTrack
           );
           console.log("Additional Wrong Answer:", additionalWrongAnswer);
 
-          // Handle the case where an additional wrong answer cannot be fetched
           if (!additionalWrongAnswer) {
             console.error("Error fetching additional wrong answer");
             return [] as string[];
@@ -316,20 +298,17 @@ export class GamePlayComponent
           }
         }
 
-        // Add the correct answer to the choices
         const choices: string[] = [
           ...filteredWrongAnswers,
           this.currentTrack.correctAnswer,
         ];
 
-        // Ensure there are exactly 4 choices
         while (choices.length < 4) {
           const additionalWrongAnswer = await getAdditionalWrongAnswer(
             this.currentTrack
           );
           console.log("Additional Wrong Answer:", additionalWrongAnswer);
 
-          // Handle the case where an additional wrong answer cannot be fetched
           if (!additionalWrongAnswer) {
             console.error("Error fetching additional wrong answer");
             return [] as string[];
@@ -340,7 +319,6 @@ export class GamePlayComponent
           }
         }
 
-        // Shuffle the choices to randomize the order
         for (let i = choices.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [choices[i], choices[j]] = [choices[j], choices[i]];
@@ -359,45 +337,57 @@ export class GamePlayComponent
 
   onAnswerSelect(answer: string): void {
     this.selectedAnswer = answer;
-    this.checkAnswer();
+    this.checkAnswer().then();
     this.showAlbumArt = true;
+    this.isLoading = true;
   }
 
-  userScore: number = 0; // Add this property to keep track of the user's score
+  userScore: number = 0;
 
   async checkAnswer(): Promise<void> {
     this.isCorrectAnswer =
       this.selectedAnswer === this.currentTrack.correctAnswer;
 
-    if (this.isCorrectAnswer) {
-      // Increment the user's score for a correct answer
-      this.userScore++;
-      this.answerTrackerService.incrementCorrectAnswerCount();
+    this.answerMessage = this.isCorrectAnswer ? "Correct!" : "Incorrect!";
 
-      if (this.gameplayMode === "quiz") {
-        this.questionsRemaining -= 1;
+    this.showAlbumArt = true;
 
-        if (this.questionsRemaining > 0) {
-          // If there are more questions, fetch the next question
-          await this.getNewQuestion();
-          this.timerComponent.resetTimer();
-        } else {
-          // If no more questions, navigate to the leaderboard
-          this.navigateToLeaderboard();
-        }
-      } else {
-        // For infinite mode, just fetch the next question
+    setTimeout(() => {
+      if (this.isCorrectAnswer) {
+        this.userScore++;
+        this.answerTrackerService.incrementCorrectAnswerCount();
+      }
+
+      this.showAlbumArt = false;
+      this.endOfQuestion();
+    }, 5000);
+  }
+
+  async endOfQuestion() {
+    if (this.gameplayMode === "quiz") {
+      this.questionsRemaining -= 1;
+
+      if (this.questionsRemaining > 0) {
+        // Continue to the next question
         await this.getNewQuestion();
         this.timerComponent.resetTimer();
+        this.timerComponent.startTimer();
+      } else {
+        d;
+        this.navigateToLeaderboard();
       }
-    } else {
-      // If the answer is wrong, navigate to the leaderboard
-      this.navigateToLeaderboard();
+    } else if (this.gameplayMode === "infinite") {
+      if (!this.isCorrectAnswer) {
+        this.navigateToLeaderboard();
+      } else {
+        await this.getNewQuestion();
+        this.timerComponent.resetTimer();
+        this.timerComponent.startTimer();
+      }
     }
   }
 
   navigateToLeaderboard() {
-    // Navigate to leaderboard and pass the score
     this.router.navigate(["/leaderboard"], {
       state: { score: this.userScore },
     });

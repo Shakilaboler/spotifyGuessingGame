@@ -1,4 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  Output,
+  EventEmitter,
+} from "@angular/core";
 import { GameConfigService } from "src/services/game-config.service";
 import { getSpotifyToken, request } from "src/services/api";
 
@@ -37,6 +44,7 @@ interface SpotifyTrack {
 })
 export class AudioPlayerComponent implements OnInit {
   @ViewChild("audioPlayer") audioPlayer!: ElementRef<HTMLAudioElement>;
+  @Output() audioLoaded = new EventEmitter<void>();
   audioSrc: string = "";
   playDuration: number = 30000;
   artistId: string = "";
@@ -49,7 +57,7 @@ export class AudioPlayerComponent implements OnInit {
     if (this.artistId) {
       this.setupGame();
     } else {
-      console.error("Artist ID is null or undefined.");
+      // console.error("Artist ID is null or undefined.");
       // Handle the case where artistId is undefined, if necessary
     }
   }
@@ -157,6 +165,9 @@ export class AudioPlayerComponent implements OnInit {
     const audio = this.audioPlayer.nativeElement;
     audio.load();
     audio.play();
+    audio.onloadeddata = () => {
+      this.audioLoaded.emit();
+    };
 
     setTimeout(() => audio.pause(), this.playDuration);
   }

@@ -27,13 +27,13 @@ export class TimerComponent implements OnInit, OnDestroy {
   calculateInitialTime(): number {
     switch (this.selectedDifficulty) {
       case "easy":
-        return 30; // 60 seconds for easy difficulty
+        return 30;
       case "medium":
-        return 20; // 45 seconds for medium difficulty
+        return 20;
       case "hard":
-        return 10; // 30 seconds for hard difficulty
+        return 10;
       default:
-        return 30; // Default to easy difficulty
+        return 30;
     }
   }
 
@@ -41,7 +41,7 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.timerInterval = setInterval(() => {
       this.timeRemaining--;
       if (this.timeRemaining === 0) {
-        this.resetTimer(); // Reset the timer when it reaches zero
+        this.resetTimer();
       }
     }, 1000);
   }

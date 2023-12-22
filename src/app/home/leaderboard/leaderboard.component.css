@@ -84,9 +84,9 @@ button:hover {
 
 .game-over {
   font-size: 40px;
-  font-family: "ArcadeClassic", sans-serif; /* Apply the custom font */
-  color: red; /* Set the text color to red */
-  animation: blinkRed 1.5s 4; /* Apply the blinking animation */
+  font-family: "ArcadeClassic", sans-serif;
+  color: red;
+  animation: blinkRed 1.5s 4;
 }
 
 @keyframes blinkRed {

@@ -13,6 +13,14 @@
           </text>
         </svg>
       </div>
+      <div
+        class="answer-message"
+        *ngIf="showAlbumArt"
+        [class.correct-answer]="isCorrectAnswer"
+        [class.incorrect-answer]="!isCorrectAnswer"
+      >
+        {{ answerMessage }}
+      </div>
 
       <div *ngIf="showGamePlay">
         <div class="album-art-container">
@@ -21,12 +29,14 @@
             [src]="currentTrack.albumArtUrl"
             alt="Album Art"
             class="album-art"
-            [class.hidden]="!showAlbumArt"
           />
           <div class="question-mark-overlay" *ngIf="!showAlbumArt">?</div>
         </div>
+        <div *ngIf="isLoading" class="loading-indicator">
+          Loading next song...
+        </div>
         <div class="app-audio-player">
-          <app-audio-player></app-audio-player>
+          <app-audio-player (audioLoaded)="onAudioLoaded()"></app-audio-player>
         </div>
         <div class="answers">
           <button
