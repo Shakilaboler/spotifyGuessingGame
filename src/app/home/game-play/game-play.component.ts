@@ -140,6 +140,7 @@ export class GamePlayComponent
     this.getNewQuestion();
     this.startTimer();
     this.showGamePlay = true;
+    this.isLoading = false;
   }
 
   ngAfterViewInit(): void {
@@ -351,7 +352,7 @@ export class GamePlayComponent
     this.answerMessage = this.isCorrectAnswer ? "Correct!" : "Incorrect!";
 
     this.showAlbumArt = true;
-
+    this.isLoading = true;
     setTimeout(() => {
       if (this.isCorrectAnswer) {
         this.userScore++;
@@ -359,6 +360,7 @@ export class GamePlayComponent
       }
 
       this.showAlbumArt = false;
+      this.isLoading = false;
       this.endOfQuestion();
     }, 5000);
   }
@@ -373,12 +375,18 @@ export class GamePlayComponent
         this.timerComponent.resetTimer();
         this.timerComponent.startTimer();
       } else {
+        // No more questions remaining, navigate to leaderboard
         this.navigateToLeaderboard();
       }
     } else if (this.gameplayMode === "infinite") {
       if (!this.isCorrectAnswer) {
-        this.navigateToLeaderboard();
+        // In "infinite" mode, don't navigate to leaderboard on incorrect answer
+        // Get the next question instead
+        await this.getNewQuestion();
+        this.timerComponent.resetTimer();
+        this.timerComponent.startTimer();
       } else {
+        // Continue to the next question
         await this.getNewQuestion();
         this.timerComponent.resetTimer();
         this.timerComponent.startTimer();
